@@ -16,7 +16,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='universa',
-    version='0.0.1',
+    version='0.0.2',
     author='Vadim Kovrigin',
     author_email='kovrigin.dev@gmail.com',
     description='Python package to access Universa API from python.',
