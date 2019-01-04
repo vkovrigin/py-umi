@@ -1,6 +1,8 @@
 
 # Universa
 
+[![Build status](https://travis-ci.org/vkovrigin/universa.svg?master)](https://travis-ci.org/vkovrigin/universa)
+
 This is an under-construction official python package from [Universa](https://universa.io) to facilitate access to the Java library using Universa's UMI protocol.  
 
 ## Installation
