@@ -14,16 +14,13 @@ class Base(object):
 
     __slots__ = ('id', '__weakref__')
 
-    def __init__(self, skip_update=False, **kwargs):
+    def __init__(self, **kwargs):
         self.id = kwargs.get('id')
 
         if self.id is None:
             for k, v in self.from_instantiate(self._instantiate()).items():
                 setattr(self, k, v)
             transport.OBJECTS[self.id] = self
-
-        if self.id is not None and not skip_update:
-            self.update()
 
     def __str__(self):
         return '<{}: {}>'.format(self.__class__.__name__, self.id)
@@ -52,14 +49,18 @@ class Base(object):
         args = [self.__class__.__name__]
         data = self._instantiate_data()
         if data is not None:
-            args.append(data)
+            if isinstance(data, tuple):
+                args.extend(data)
+            else:
+                args.append(data)
         return transport.instantiate(*args)
 
     def _invoke(self, method_name, *args):
         return transport.invoke(self.id, method_name, *args)
 
-    def _invoke_static(self, method_name, *args):
-        return transport.invoke_static(self.API_TYPE, method_name, *args)
+    @classmethod
+    def _invoke_static(cls, method_name, *args):
+        return transport.invoke_static(cls.API_TYPE, method_name, *args)
 
     @classmethod
     def _get(cls, _id):
@@ -68,8 +69,7 @@ class Base(object):
     @classmethod
     def get(cls, _id):
         data = cls._get(_id)
-        data['id'] = _id
-        instance = cls(skip_update=True, **data)
+        instance = cls(id=_id, skip_update=True, **data)
         transport.OBJECTS[_id] = instance
         return instance
 
@@ -82,14 +82,25 @@ class Base(object):
         if isinstance(self, Base) and self.id is not None:
             return {'__type': 'RemoteObject', 'className': self.JAVA_CLASS, 'id': self.id}
 
-    def equals(self, obj):
+    def _get_hashset(self, cmd):
+        rsp = self._invoke(cmd)
+        if rsp is not None:
+            klass = self.get_class_by_java(rsp['className'])
+            return klass.get(rsp['id'])
+        else:
+            return None
+
+    def _equals(self, equals_method_name, obj):
         if id(self) == id(obj):
             return True
 
         if self.JAVA_CLASS != obj.JAVA_CLASS:
             return False
 
-        return self._invoke('equals', obj.remote)
+        return self._invoke(equals_method_name, obj.remote)
+
+    def equals(self, obj):
+        return self._equals('equals', obj)
 
     def _instantiate_data(self):
         raise NotImplementedError()

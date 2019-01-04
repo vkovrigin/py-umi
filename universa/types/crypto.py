@@ -3,22 +3,29 @@ from __future__ import absolute_import, unicode_literals
 
 from .base import logger, Base
 
-
+#
+# Abstract
+#
 class AbstractKey(Base):
     def __init__(self, size=None, key=None, **kwargs):
         self.size = size
         self.key = key
         super(AbstractKey, self).__init__(size=size, key=key, **kwargs)
+        if self.id is not None and not kwargs.get('skip_update', False):
+            self.update()
         self.pack()
 
     def _instantiate_data(self):
         if self.key is not None:
-            return {'__type': 'binary', 'base64': self.key}
+            return self.to_binary()
         elif self.size is not None:
             return self.size
         else:
             logger.exception('Can\'t find .instantiate_data() data for %s', self)
             return None
+
+    def to_binary(self):
+        return {'__type': 'binary', 'base64': self.key}
 
     def pack(self):
         rsp = self._invoke('pack')
@@ -26,6 +33,9 @@ class AbstractKey(Base):
         return self.key
 
 
+#
+# Real
+#
 class KeyAddress(Base):
     JAVA_CLASS = 'com.icodici.crypto.KeyAddress'
 
@@ -35,9 +45,19 @@ class KeyAddress(Base):
         self.address = address
         self.uaddress = uaddress
         super(KeyAddress, self).__init__(address=address, uaddress=uaddress, **kwargs)
+        if self.address is None:
+            self.to_string()
+        if self.uaddress is None:
+            self.update()
 
     def _instantiate_data(self):
-        return self.address or ''
+        if self.address:
+            return self.address
+        elif self.uaddress:
+            return self.to_binary()
+
+    def to_binary(self):
+        return {'__type': 'binary', 'base64': self.uaddress}
 
     @staticmethod
     def from_get(data):
@@ -85,6 +105,9 @@ class PrivateKey(AbstractKey):
 
     @property
     def public_key(self):
+        """
+        :rtype: PublicKey
+        """
         if self._public_key is not None:
             return self._public_key
 
@@ -105,22 +128,36 @@ class PublicKey(AbstractKey):
         return {'key': data['packed']['base64']}
 
     def _get_address(self, short=True):
+        """
+        :rtype: KeyAddress
+        """
         rsp = self._invoke('getShortAddress' if short else 'getLongAddress')
         instance = KeyAddress.get(rsp['id'])
-        instance.to_string()
         setattr(self, '_short_address' if short else '_long_address', instance)
         return instance
 
     @property
     def short_address(self):
+        """
+        :rtype: KeyAddress
+        """
         return self._short_address if self._short_address is not None else self.get_short_address()
 
     def get_short_address(self):
+        """
+        :rtype: KeyAddress
+        """
         return self._get_address(short=True)
 
     @property
     def long_address(self):
+        """
+        :rtype: KeyAddress
+        """
         return self._long_address if self._long_address is not None else self.get_long_address()
 
     def get_long_address(self):
+        """
+        :rtype: KeyAddress
+        """
         return self._get_address(short=False)

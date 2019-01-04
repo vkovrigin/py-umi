@@ -6,10 +6,10 @@ from .binder import Binder
 from .contract import ContractsService, Reference, Contract, Parcel, ExtendedSignature
 from .crypto import KeyAddress, PrivateKey, PublicKey
 from .hash_id import HashId
-from .hash_set import Set
 from .network import Client
 from .permissions import ChangeNumberPermission, ChangeOwnerPermission, ModifyDataPermission, RevokePermission, SplitJoinPermission
-from .roles import SimpleRole, ListRole, RoleRequiredMode, ListRoleMode, RoleLink
+from .roles import SimpleRole, ListRole, RoleLink
+from .utils import HashSet
 
 
 def __all_subclasses(cls):

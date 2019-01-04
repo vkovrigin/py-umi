@@ -64,7 +64,7 @@ class Transport(object):
         logger.info('   << response: %s', rsp)
         if 'error' in rsp:
             logger.exception('Universa exception caught: %s', rsp_text)
-            raise exceptions.UniversaException(rsp_text)
+            raise exceptions.UniversaException(rsp_text, rsp['error'])
         return rsp['result']
 
     def version(self):

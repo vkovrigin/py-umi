@@ -16,13 +16,16 @@ def test():
     assert public_3.key == public.key, 'public keys are different'
 
     key_address = public.short_address
-    assert not key_address.is_long, 'short address should be not is_long'
+    assert not key_address.is_long, 'short address should be `not is_long`'
 
     key_address_4 = KeyAddress(address=key_address.address)
     assert key_address_4.equals(key_address), 'equals for key addresses failed'
     assert key_address_4.is_matching_key_address(key_address), 'is_matching_key_address failed'
     assert key_address_4.address == key_address.address, 'key addresses are different'
     assert key_address_4.uaddress == key_address.uaddress, 'key addresses are different'
+
+    key_address_5 = KeyAddress(uaddress=key_address.uaddress)
+    assert key_address_5.equals(key_address), 'equals for key addresses failed'
 
     long_address = public.long_address
     assert long_address.is_long, 'long address should be is_long'
