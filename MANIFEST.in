@@ -1,0 +1,2 @@
+include umi/bin/*
+include umi/lib/*

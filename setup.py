@@ -20,6 +20,7 @@ setuptools.setup(
     author='Vadim Kovrigin',
     author_email='kovrigin.dev@gmail.com',
     description='Python package to access Universa API from python.',
+    include_package_data=True,
     long_description=long_description,
     long_description_content_type='text/markdown',
     keywords=['Universa'],
