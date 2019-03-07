@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+import os.path
 import json
 import weakref
 
@@ -18,7 +19,7 @@ logger = logging.getLogger()
 
 
 class Transport(object):
-    BINARY = './umi/bin/umi'
+    BINARY = os.path.join(os.path.dirname(__file__), '../umi/bin/umi')
     OBJECTS = {}
 
     __instance = None
