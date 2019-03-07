@@ -19,7 +19,7 @@ logger = logging.getLogger()
 
 
 class Transport(object):
-    BINARY = os.path.join(os.path.dirname(__file__), '../umi/bin/umi')
+    BINARY = os.path.join(os.path.dirname(__file__), './contrib/umi/bin/umi')
     OBJECTS = {}
 
     __instance = None
