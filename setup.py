@@ -14,12 +14,24 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 
+EXTRAS_REQUIRE = {
+    'dev': [
+        'pytest',
+    ]
+}
+
+
 setuptools.setup(
     name='universa',
     version='0.0.3',
     author='Vadim Kovrigin',
     author_email='kovrigin.dev@gmail.com',
     description='Python package to access Universa API from python.',
+    include_package_data=True,
+    install_requires=[
+        "pexpect>=4.0.0",
+    ],
+    extras_require=EXTRAS_REQUIRE,
     long_description=long_description,
     long_description_content_type='text/markdown',
     keywords=['Universa'],
