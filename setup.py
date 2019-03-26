@@ -23,7 +23,7 @@ EXTRAS_REQUIRE = {
 
 setuptools.setup(
     name='universa',
-    version='0.0.6',
+    version='0.0.7',
     author='Vadim Kovrigin',
     author_email='kovrigin.dev@gmail.com',
     description='Python package to access Universa API from python.',
