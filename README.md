@@ -3,7 +3,9 @@
 
 [![Build status](https://travis-ci.org/vkovrigin/universa.svg?master)](https://travis-ci.org/vkovrigin/universa)
 
-This is an under-construction official python package from [Universa](https://universa.io) to facilitate access to the Java library using Universa's UMI protocol.  
+This is an under-construction official python package from
+[Universa](https://universablockchain.com)
+to facilitate access to the Java library using Universa's UMI protocol.
 
 ## Installation
 
@@ -38,9 +40,9 @@ if __name__ == '__main__':
 ## Docs and resources
 
 For more information see:
-- [Universa Knowledge Base](https://kb.universa.io/)
-- [Universa Java API](https://kb.universa.io/general_java_api/5)
-- [Universa UMI server](https://kb.universa.io/umi_protocol/98)
+- [Universa Knowledge Base](https://kb.universablockchain.com/)
+- [Universa Java API](https://kb.universablockchain.com/general_java_api/5)
+- [Universa UMI server](https://kb.universablockchain.com/umi_protocol/98)
 
 ## License
 
