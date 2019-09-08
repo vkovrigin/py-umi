@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-import os.path
 import json
 import weakref
 
@@ -19,10 +18,10 @@ logger = logging.getLogger()
 
 
 class Transport(object):
-    BINARY = os.path.join(os.path.dirname(__file__), './contrib/umi/bin/umi')
     OBJECTS = {}
 
     __instance = None
+    __proc = None
 
     def __init__(self):
         if Transport.__instance is not None:
@@ -31,12 +30,65 @@ class Transport(object):
 
         Transport.__instance = self
         self.OBJECTS = weakref.WeakValueDictionary()
-        self.__proc = None
         self.serial = 0
 
     def __del__(self):
         logger.info('Cleaning')
         self.drop_objects(drop_all=True)
+
+    @classmethod
+    def setupUMI(cls, method, path=None, host=None, port=None):
+        """Configure Python to use a specific UMI connection.
+
+        :param method: one of `'pipe'`, `'tcp'` or `'unix'`.
+            If `path='pipe'`, you must provide the `path` argument with the path to the UMI executable;
+            may be in $PATH.
+            If `path='tcp'`, you must provide the `host` and `port` arguments of the UMI TCP server.
+            If `path='unix'`, you must provide the `path` argument to connect to the UMI TCP server.
+        :return: the transport (pexpect) instance
+        :raises ValueError: if the arguments are improperly provided;
+            if UMI executable is not available or reachable.
+        """
+        assert method in ('pipe', 'tcp', 'unix'), method
+        if method == 'pipe':
+            if not path:
+                raise ValueError('In "pipe" mode, you should provide non-empty "path" for UMI binary!')
+            builder = lambda: cls.__make_pexpect_pipe_transport(path)
+        elif method == 'tcp':
+            if not host or not port:
+                raise ValueError('In "tcp" mode, you should provide non-empty "host" and "port" for UMI TCP socket!')
+            builder = lambda: cls.__make_pexpect_tcp_transport(host, port)
+        elif method == 'unix':
+            if not path:
+                raise ValueError('In "unix" mode, you should provide non-empty "path" for UMI Unix socket!')
+            builder = lambda: cls.__make_pexpect_unix_transport(path)
+        else:
+            raise ValueError('Unsupported method {}'.format())
+
+        # We have a `builder` defined here.
+        # Do we have a running transport already?
+        if cls.__proc is not None:
+            cls.__instance.drop_objects(drop_all=True)
+
+        cls.__proc = builder()
+
+    @staticmethod
+    def __make_pexpect_pipe_transport(binary_path):
+        try:
+            return pexpect.spawn(binary_path, timeout=None)
+        except pexpect.exceptions.ExceptionPexpect as e:
+            if e.value.startswith('The command was not found or was not executable:'):
+                raise ValueError('UMI executable you have chosen is not available at the requested path (or in $PATH).')
+            else:
+                raise
+
+    @staticmethod
+    def __make_pexpect_tcp_transport(host, port):
+        raise NotImplementedError()
+
+    @staticmethod
+    def __make_pexpect_unix_transport(path):
+        raise NotImplementedError()
 
     @staticmethod
     def get_instance():
@@ -46,9 +98,8 @@ class Transport(object):
 
     @property
     def transport(self):
-        if self.__proc is not None:
-            return self.__proc
-        self.__proc = pexpect.spawn(self.BINARY, timeout=None)
+        if self.__proc is None:
+            setupUMI('pipe', 'umi')  # default UMI configuration if not set up explicitly
         return self.__proc
 
     def _format(self, **kwargs):
@@ -100,3 +151,5 @@ class Transport(object):
 
 
 transport = Transport()
+
+setupUMI = Transport.setupUMI

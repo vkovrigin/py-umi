@@ -2,31 +2,43 @@
 from __future__ import absolute_import, unicode_literals
 
 import gc
+import unittest
 
 from universa.transport import transport
 from universa.types import PrivateKey
 
 
-def test():
-    gc.enable()
+class TestTransport(unittest.TestCase):
 
-    assert len(transport.OBJECTS) == 0, 'transport objects are not blank'
+    def testSetup(self):
+        with self.assertRaises(ValueError):
+            transport.setupUMI('pipe', 'veryrandombinaryname4242')
+        transport.setupUMI('pipe', 'umi')
 
-    key = PrivateKey(size=2048)
-    assert len(transport.OBJECTS) == 1, 'transport objects does not contains only one value'
+    def test(self):
+        gc.enable()
 
-    key2 = PrivateKey(size=2048)
-    assert len(transport.OBJECTS) == 2, 'transport objects does not contains only two values'
+        self.assertEqual(len(transport.OBJECTS), 0, 'transport objects are not blank')
 
-    # Create a key overriding previous one variable.
-    # GarbageCollector should delete old object and kill it from transport (and UMI remote object).
-    key2 = PrivateKey(size=2048)
-    assert len(transport.OBJECTS) == 2, 'transport objects does not contains only two values'
+        key = PrivateKey(size=2048)
+        self.assertEqual(len(transport.OBJECTS), 1, 'transport objects does not contains only one value')
 
-    # Create a key and don't save it to the variable. It should be deleted by UMI at once.
-    PrivateKey(size=2048)
-    assert len(transport.OBJECTS) == 2, 'transport objects does not contains only two values'
+        key2 = PrivateKey(size=2048)
+        self.assertEqual(len(transport.OBJECTS), 2, 'transport objects does not contains only two values')
 
-    # Delete a local key object. It should be removed from UMI too.
-    del key2
-    assert len(transport.OBJECTS) == 1, 'transport objects does not contains only one value'
+        # Create a key overriding previous one variable.
+        # GarbageCollector should delete old object and kill it from transport (and UMI remote object).
+        key2 = PrivateKey(size=2048)
+        self.assertEqual(len(transport.OBJECTS), 2, 'transport objects does not contains only two values')
+
+        # Create a key and don't save it to the variable. It should be deleted by UMI at once.
+        PrivateKey(size=2048)
+        self.assertEqual(len(transport.OBJECTS), 2, 'transport objects does not contains only two values')
+
+        # Delete a local key object. It should be removed from UMI too.
+        del key2
+        self.assertEqual(len(transport.OBJECTS), 1, 'transport objects does not contains only one value')
+
+
+if __name__ == '__main__':
+    unittest.main()
