@@ -8,6 +8,11 @@ import subprocess
 import time
 import unittest
 
+try:
+    _FileNotFoundError = FileNotFoundError
+except NameError:
+    _FileNotFoundError = OSError
+
 from streamexpect import ExpectTimeout
 
 from universa.transport import transport
@@ -28,7 +33,7 @@ class TestTransport(unittest.TestCase):
     def setUp(self):
         try:
             os.remove(self.UNIX_SOCKET_PATH)
-        except FileNotFoundError:
+        except _FileNotFoundError:
             pass
 
         self.umi_tcp_server = subprocess.Popen(['umi', '--noexit', '--listen', 'tcp://{}:{}'.format(self.TCP_SOCKET_HOST, self.TCP_SOCKET_PORT)])
