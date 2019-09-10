@@ -2,14 +2,11 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
-import weakref
-
+import os
 import pexpect
-
-try:
-    from farcall import Farcall
-except ImportError:
-    Farcall = None
+import socket
+import streamexpect
+import weakref
 
 from universa import logging
 from universa import exceptions
@@ -18,26 +15,32 @@ logger = logging.getLogger()
 
 
 class Transport(object):
+    DEFAULT_CONNECTION_METHOD = 'pipe'
+    DEFAULT_BINARY = 'umi'
+    DEFAULT_CONNECTION_CONFIG = (DEFAULT_CONNECTION_METHOD, DEFAULT_BINARY)
+
     OBJECTS = {}
 
+    method = DEFAULT_CONNECTION_METHOD
     __instance = None
     __proc = None
 
-    def __init__(self):
+    def __init__(self, serial=0):
         if Transport.__instance is not None:
-            logger.exception('Universa Transport is a singleton.')
             raise Exception('Universa Transport is a singleton.')
 
         Transport.__instance = self
         self.OBJECTS = weakref.WeakValueDictionary()
-        self.serial = 0
+        self.serial = max(serial, 0)
 
     def __del__(self):
-        logger.info('Cleaning')
-        self.drop_objects(drop_all=True)
+        logger.debug('Cleaning')
+        if self.__proc is not None:
+            self.drop_objects(drop_all=True)
+            self.__proc.close()
 
     @classmethod
-    def setupUMI(cls, method, path=None, host=None, port=None):
+    def setupUMI(cls, method, path=None, host=None, port=None, serial=0):
         """Configure Python to use a specific UMI connection.
 
         :param method: one of `'pipe'`, `'tcp'` or `'unix'`.
@@ -49,7 +52,6 @@ class Transport(object):
         :raises ValueError: if the arguments are improperly provided;
             if UMI executable is not available or reachable.
         """
-        assert method in ('pipe', 'tcp', 'unix'), method
         if method == 'pipe':
             if not path:
                 raise ValueError('In "pipe" mode, you should provide non-empty "path" for UMI binary!')
@@ -63,14 +65,17 @@ class Transport(object):
                 raise ValueError('In "unix" mode, you should provide non-empty "path" for UMI Unix socket!')
             builder = lambda: cls.__make_pexpect_unix_transport(path)
         else:
-            raise ValueError('Unsupported method {}'.format())
+            raise ValueError('Unsupported method {}'.format(method))
 
         # We have a `builder` defined here.
         # Do we have a running transport already?
         if cls.__proc is not None:
             cls.__instance.drop_objects(drop_all=True)
+            cls.__proc.close()
 
         cls.__proc = builder()
+        cls.method = method
+        transport.serial = max(serial, 0)
 
     @staticmethod
     def __make_pexpect_pipe_transport(binary_path):
@@ -84,11 +89,21 @@ class Transport(object):
 
     @staticmethod
     def __make_pexpect_tcp_transport(host, port):
-        raise NotImplementedError()
+        try:
+            sock = socket.create_connection((host, port))
+        except ConnectionRefusedError:
+            raise ConnectionRefusedError('UMI refused the connection at tcp://%s:%s.' % (host, port))
+        return streamexpect.wrap(sock, close_stream=False)
 
     @staticmethod
-    def __make_pexpect_unix_transport(path):
-        raise NotImplementedError()
+    def __make_pexpect_unix_transport(socket_path):
+        socket_path = os.path.abspath(socket_path)
+        try:
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            sock.connect(socket_path)
+        except ConnectionRefusedError:
+            raise ConnectionRefusedError('UMI refused the connection at unix://%s.' % socket_path)
+        return streamexpect.wrap(sock, close_stream=False)
 
     @staticmethod
     def get_instance():
@@ -99,28 +114,41 @@ class Transport(object):
     @property
     def transport(self):
         if self.__proc is None:
-            setupUMI('pipe', 'umi')  # default UMI configuration if not set up explicitly
+            self.setupUMI(*self.DEFAULT_CONNECTION_CONFIG)  # default UMI configuration if not set up explicitly
         return self.__proc
 
-    def _format(self, **kwargs):
-        return json.dumps(kwargs, separators=(',', ':'))
+    @staticmethod
+    def _format(**kwargs):
+        return json.dumps(kwargs, separators=(',', ':')).encode()
 
-    def sync_call(self, name, **kwargs):
+    def sync_call(self, name, full_response=False, **kwargs):
         cmd = self._format(serial=self.serial, cmd=name, **kwargs)
-        logger.info('   >> executing cmd: %s', cmd)
-        self.transport.sendline(cmd)
-        self.transport.expect('\r\n.*"ref":%s.*\r\n' % self.serial)
+        logger.debug('   >> %s', cmd)
+        if self.method == 'pipe':
+            self.transport.sendline(cmd)
+            self.transport.expect('\r\n.*"ref":%s.*\r\n' % self.serial)
+            rsp_text = self.transport.after.decode().strip()
+        else:
+            self.transport.sendall(cmd + b'\r\n')
+            match = self.transport.expect_regex((r'({.*"ref":%s.*})' % self.serial).encode())
+            rsp_text = match.groups[0]
         self.serial += 1
-        rsp_text = self.transport.after.decode().strip()
+        logger.debug('   << %s', rsp_text)
         rsp = json.loads(rsp_text)
-        logger.info('   << response: %s', rsp)
         if 'error' in rsp:
-            logger.exception('Universa exception caught: %s', rsp_text)
             raise exceptions.UniversaException(rsp_text, rsp['error'])
-        return rsp['result']
 
+        if not full_response:
+            return rsp['result']
+        else:
+            return rsp
+
+    @property
     def version(self):
         return self.sync_call('version')
+
+    def test(self):
+        return self.sync_call('version', full_response=True)
 
     def instantiate(self, object_type, *args):
         return self.sync_call('instantiate', args=[object_type] + list(args))

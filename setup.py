@@ -29,7 +29,8 @@ setuptools.setup(
     description='Python package to access Universa API from python.',
     include_package_data=True,
     install_requires=[
-        "pexpect>=4.0.0",
+        'pexpect>=4.7.0',
+        'streamexpect>=0.2.1',
     ],
     extras_require=EXTRAS_REQUIRE,
     long_description=long_description,

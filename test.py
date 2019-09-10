@@ -5,7 +5,12 @@ from universa.types import PrivateKey, Contract, RevokePermission
 if __name__ == '__main__':
     # The next line is not necessary if umi is reachable via the $PATH
     # transport.setupUMI('pipe', '/usr/local/bin/umi')
-    print(transport.version())
+
+    # To connect to an already running UMI instance you may use one of this modes:
+    # transport.setupUMI('tcp', host='127.0.0.1', port=12345)  # IPv6 is also ok
+    # transport.setupUMI('unix', path='/path-to-the-socket')
+
+    print(transport.version)
 
     private_key = PrivateKey(size=2048)
     contract = Contract()
