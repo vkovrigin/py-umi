@@ -39,7 +39,7 @@ class TestTransport(unittest.TestCase):
 
         cls.umi_tcp_server = subprocess.Popen(['umi', '--noexit', '--listen', 'tcp://{}:{}'.format(cls.TCP_SOCKET_HOST, cls.TCP_SOCKET_PORT)])
         cls.umi_unix_server = subprocess.Popen(['umi', '--noexit', '--listen', 'unix://{}'.format(cls.UNIX_SOCKET_PATH)])
-        time.sleep(1)
+        time.sleep(3)  # Wait a bit while both UMI servers start
 
     @classmethod
     def tearDownClass(cls):
