@@ -30,19 +30,21 @@ class TestTransport(unittest.TestCase):
     umi_tcp_server = None
     umi_unix_server = None
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         try:
-            os.remove(self.UNIX_SOCKET_PATH)
+            os.remove(cls.UNIX_SOCKET_PATH)
         except _FileNotFoundError:
             pass
 
-        self.umi_tcp_server = subprocess.Popen(['umi', '--noexit', '--listen', 'tcp://{}:{}'.format(self.TCP_SOCKET_HOST, self.TCP_SOCKET_PORT)])
-        self.umi_unix_server = subprocess.Popen(['umi', '--noexit', '--listen', 'unix://{}'.format(self.UNIX_SOCKET_PATH)])
+        cls.umi_tcp_server = subprocess.Popen(['umi', '--noexit', '--listen', 'tcp://{}:{}'.format(cls.TCP_SOCKET_HOST, cls.TCP_SOCKET_PORT)])
+        cls.umi_unix_server = subprocess.Popen(['umi', '--noexit', '--listen', 'unix://{}'.format(cls.UNIX_SOCKET_PATH)])
         time.sleep(1)
 
-    def tearDown(self):
-        for attr in ('umi_tcp_server', ):
-            proc = getattr(self, attr, None)
+    @classmethod
+    def tearDownClass(cls):
+        for attr in ('umi_tcp_server', 'umi_unix_server'):
+            proc = getattr(cls, attr, None)
             if proc is not None:
                 proc.terminate()
 
