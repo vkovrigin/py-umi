@@ -5,12 +5,12 @@ python:
   - "3.6"
   - "3.7"
 before_install:
-  - sudo apt-get install -y unzip
+  - sudo apt-get install -y unzip openjdk-8-jdk
 install:
   - wget https://lnd.im/umi -O /tmp/umi.zip
   - unzip -o /tmp/umi.zip
   - UMI_dir=$(unzip -l /tmp/umi.zip | awk 'FNR==4 {print $4}' | cut -f1 -d"/")
-  - ln -s "$UMI_dir"/bin/umi "$UMI_dir"/
-  - export PATH=$PATH:$PWD/$UMI_dir/
+  - ln -s "$UMI_dir"/bin/umi "$UMI_dir/umi"/
+  - export PATH=$PATH:$PWD/$UMI_dir
   - pip install -r requirements.txt
 script: pytest

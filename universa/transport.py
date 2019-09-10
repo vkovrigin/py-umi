@@ -55,15 +55,15 @@ class Transport(object):
         if method == 'pipe':
             if not path:
                 raise ValueError('In "pipe" mode, you should provide non-empty "path" for UMI binary!')
-            builder = lambda: cls.__make_pexpect_pipe_transport(path)
+            builder = lambda: cls.__make_pipe_transport(path)
         elif method == 'tcp':
             if not host or not port:
                 raise ValueError('In "tcp" mode, you should provide non-empty "host" and "port" for UMI TCP socket!')
-            builder = lambda: cls.__make_pexpect_tcp_transport(host, port)
+            builder = lambda: cls.__make_tcp_transport(host, port)
         elif method == 'unix':
             if not path:
                 raise ValueError('In "unix" mode, you should provide non-empty "path" for UMI Unix socket!')
-            builder = lambda: cls.__make_pexpect_unix_transport(path)
+            builder = lambda: cls.__make_unix_transport(path)
         else:
             raise ValueError('Unsupported method {}'.format(method))
 
@@ -78,7 +78,7 @@ class Transport(object):
         transport.serial = max(serial, 0)
 
     @staticmethod
-    def __make_pexpect_pipe_transport(binary_path):
+    def __make_pipe_transport(binary_path):
         try:
             return pexpect.spawn(binary_path, timeout=None)
         except pexpect.exceptions.ExceptionPexpect as e:
@@ -88,7 +88,7 @@ class Transport(object):
                 raise
 
     @staticmethod
-    def __make_pexpect_tcp_transport(host, port):
+    def __make_tcp_transport(host, port):
         try:
             sock = socket.create_connection((host, port))
         except ConnectionRefusedError:
@@ -96,7 +96,7 @@ class Transport(object):
         return streamexpect.wrap(sock, close_stream=False)
 
     @staticmethod
-    def __make_pexpect_unix_transport(socket_path):
+    def __make_unix_transport(socket_path):
         socket_path = os.path.abspath(socket_path)
         try:
             sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
