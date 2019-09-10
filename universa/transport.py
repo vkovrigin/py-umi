@@ -127,11 +127,19 @@ class Transport(object):
         if self.method == 'pipe':
             self.transport.sendline(cmd)
             self.transport.expect('\r\n.*"ref":%s.*\r\n' % self.serial)
-            rsp_text = self.transport.after.decode().strip()
+            rsp_text = self.transport.after
         else:
             self.transport.sendall(cmd + b'\r\n')
             match = self.transport.expect_regex((r'({.*"ref":%s.*})' % self.serial).encode())
             rsp_text = match.groups[0]
+
+        try:
+            rsp_text = rsp_text.decode()
+        except Exception:
+            pass
+        finally:
+            rsp_text = rsp_text.strip()
+
         self.serial += 1
         logger.debug('   << %s', rsp_text)
         rsp = json.loads(rsp_text)
