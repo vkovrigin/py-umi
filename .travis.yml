@@ -1,13 +1,14 @@
 language: python
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-  - "3.7"
-  - "3.8-dev"
+  - '2.7'
+  - '3.5'
+  - '3.6'
+  - '3.7'
+  - '3.8-dev'
 matrix:
   allow_failures:
-  - python: "3.8-dev"
+  - python: '3.8-dev'
+
 before_install:
   - sudo apt-get install -y unzip openjdk-8-jdk
 install:
@@ -17,4 +18,15 @@ install:
   - ln -sf "$PWD/$UMI_dir"/bin/umi "$PWD/$UMI_dir/umi"
   - export PATH=$PATH:$PWD/$UMI_dir
   - pip install -r requirements.txt
+
 script: pytest
+
+deploy:
+  provider: pypi
+  user: 'vkovrigin'
+  password:
+    secure: rPira11eIvZU9WT1WoycDitsRQCFz472fuXmBLo3doekJXYjizNBdhsFjHEN93w1zG46OkwVY9IWE+XGLwdfuTK/1f4XKWQzXd69VK8GVRnEMOjzX5KG9rKe76KzyX2fDRAwQ2HifFJ/XuYyv03Vp1tGpK4LSbGXnyJaCDdqvjb1+oc7Lav+Sl+iW5m+mzP7us3Am0nRKh1G8RgZjXOIisuxLiI4jssSK/2lX45CFHeVG1+tM+9meB8loJQLQ9G0IIY2CcC9QO1t8Iw+RFuBbeVpwt2PmjQTVgfkgfELv0I1Zhz5HggF1+jbAXZyoDSeNV5GFu9Z3yndrmveTvlMW4IyVU9e5ftwqfrNjxRNav26vFhgUQk8HlmDD6PP0NTeM1aja+/FL19RCBn5OucKkZCkD4HtoiM3ItvcLRJ3+X/ZJyn/kIrDpnFWmrne2n7qqHhFFCeeWmeoUiutmJTMXkZvPl9vp8NtQSYftE0mSSRauLD77DOWt/L6CGozvmlj7bsoDg0rkAVhDWTtGmtotJOp92NLdUo+XMsmLvyDVNOI6eH6ztdv5QOxgo90/8GXX8aE89ER6eqUzwtI9SmVuBlZ3iLsynSbWZ5ON6ZOS0PhNv71TPkGjGQeqOup3RjazM1XseC2GTliX9l35sAP8JEDThJobCJZLwHpKPi73vg=
+  on:
+    tags: true
+  distributions: 'sdist bdist_wheel'
+  skip_existing: true
