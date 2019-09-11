@@ -70,8 +70,11 @@ class Transport(object):
         # We have a `builder` defined here.
         # Do we have a running transport already?
         if cls.__proc is not None:
-            cls.__instance.drop_objects(drop_all=True)
-            cls.__proc.close()
+            try:
+                cls.__instance.drop_objects(drop_all=True)
+                cls.__proc.close()
+            except OSError:
+                pass
 
         cls.__proc = builder()
         cls.method = method

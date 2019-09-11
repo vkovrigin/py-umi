@@ -7,7 +7,6 @@ from universa.types import PrivateKey, SimpleRole, HashSet
 
 
 class TestHash(unittest.TestCase):
-
     def test(self):
         private_key = PrivateKey(size=2048)
         short_address = private_key.public_key.short_address

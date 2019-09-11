@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+from datetime import timedelta
 import unittest
 import warnings
-from datetime import timedelta
 
 from universa.types import PrivateKey, Contract, SimpleRole
 
