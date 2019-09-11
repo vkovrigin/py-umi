@@ -123,7 +123,7 @@ class Transport(object):
 
     def sync_call(self, name, full_response=False, **kwargs):
         cmd = self._format(serial=self.serial, cmd=name, **kwargs)
-        logger.debug('   >> %s', cmd)
+        logger.debug('   >> %s', cmd.decode())
         if self.method == 'pipe':
             self.transport.sendline(cmd)
             self.transport.expect('\r\n.*"ref":%s.*\r\n' % self.serial)
@@ -170,20 +170,21 @@ class Transport(object):
     def get(self, remote_object_id):
         return self.sync_call('get', args=[remote_object_id])
 
-    def drop_objects(self, ids=None, drop_all=False):
-        ids = ids if ids is not None else []
-        to_delete = set()
-        if not drop_all:
-            for _id in ids:
-                if _id in self.OBJECTS:
-                    to_delete.add(_id)
-                    self.OBJECTS.pop(_id, None)
-        else:
-            to_delete = list(self.OBJECTS.keys())
-            self.OBJECTS = weakref.WeakValueDictionary()
+    def get_field(self, remote_object_id, field_name):
+        return self.sync_call('get_field', args=[remote_object_id, field_name])
 
-        if to_delete:
-            return self.sync_call('drop_objects', ids=list(to_delete))
+    def drop_objects(self, ids=None, drop_all=False):
+        if not drop_all:
+            to_delete = set()
+            for _id in ids or []:
+                to_delete.add(_id)
+                if _id in self.OBJECTS:
+                    self.OBJECTS.pop(_id, None)
+            else:
+                return self.sync_call('drop_objects', ids=list(to_delete))
+        else:
+            self.OBJECTS = weakref.WeakValueDictionary()
+            return self.sync_call('drop_all')
 
 
 transport = Transport()
