@@ -29,7 +29,7 @@ class Base(object):
         return '<{}: {}>'.format(self.__class__.__name__, self.id)
 
     def __del__(self):
-        logger.info('Deleting local %s', self)
+        logger.debug('Deleting local %s', self)
         if self.id and transport:
             transport.drop_objects([self.id])
 
@@ -45,6 +45,30 @@ class Base(object):
     def get_class_by_type(api_type):
         return TYPES_CLASS_MAP.get(api_type, DEFAULT_CLASS)
 
+    @classmethod
+    def obj_umification(cls, obj):
+        if isinstance(obj, Base):
+            obj = obj.remote
+        elif isinstance(obj, dict):
+            obj = cls.kwargs_umification(obj)
+        elif isinstance(obj, (tuple, list, set)):
+            obj = cls.args_umification(obj)
+        return obj
+
+    @classmethod
+    def args_umification(cls, args):
+        umi_args = []
+        for obj in args:
+            umi_args.append(cls.obj_umification(obj))
+        return umi_args
+
+    @classmethod
+    def kwargs_umification(cls, dct):
+        umi_dct = {}
+        for key, value in dct.items():
+            umi_dct[cls.obj_umification(key)] = cls.obj_umification(value)
+        return umi_dct
+
     def _instantiate(self):
         args = [self.__class__.__name__]
         data = self._instantiate_data()
@@ -56,20 +80,29 @@ class Base(object):
         return transport.instantiate(*args)
 
     def _invoke(self, method_name, *args):
-        return transport.invoke(self.id, method_name, *args)
+        return transport.invoke(self.id, method_name, *self.args_umification(args))
+
+    @classmethod
+    def _invoke_static_with_type(cls, api_type, method_name, *args):
+        return transport.invoke_static(api_type, method_name, *cls.args_umification(args))
 
     @classmethod
     def _invoke_static(cls, method_name, *args):
-        return transport.invoke_static(cls.API_TYPE, method_name, *args)
+        return cls._invoke_static_with_type(cls.API_TYPE, method_name, *cls.args_umification(args))
 
     @classmethod
     def _get(cls, _id):
         return cls.from_get(transport.get(_id))
 
     @classmethod
+    def _get_field(cls, _id, field_name):
+        return cls.from_get(transport.get_field(_id, field_name))
+
+    @classmethod
     def get(cls, _id):
         data = cls._get(_id)
         instance = cls(id=_id, skip_update=True, **data)
+        # TODO: probably we don't want to save this object to the transport cause it may not be saved to a variable
         transport.OBJECTS[_id] = instance
         return instance
 
