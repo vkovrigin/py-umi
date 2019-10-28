@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+from base64 import b64encode
+
 from .base import logger, Base
+
 
 #
 # Abstract
@@ -91,6 +94,8 @@ class PrivateKey(AbstractKey):
     # __slots__ = ('id', 'size', 'packed', 'key')
 
     def __init__(self, size=None, key=None, **kwargs):
+        if isinstance(key, bytes):
+            key = b64encode(key).decode()
         super(PrivateKey, self).__init__(size=size, key=key, **kwargs)
         self._public_key = None
 
@@ -100,17 +105,13 @@ class PrivateKey(AbstractKey):
 
     def get_public_key(self):
         rsp = self._invoke('getPublicKey')
-        self._public_key = PublicKey.get(rsp['id'])
-        return self._public_key
+        return PublicKey.get(rsp['id'])
 
     @property
     def public_key(self):
         """
         :rtype: PublicKey
         """
-        if self._public_key is not None:
-            return self._public_key
-
         return self.get_public_key()
 
 
@@ -132,16 +133,14 @@ class PublicKey(AbstractKey):
         :rtype: KeyAddress
         """
         rsp = self._invoke('getShortAddress' if short else 'getLongAddress')
-        instance = KeyAddress.get(rsp['id'])
-        setattr(self, '_short_address' if short else '_long_address', instance)
-        return instance
+        return KeyAddress.get(rsp['id'])
 
     @property
     def short_address(self):
         """
         :rtype: KeyAddress
         """
-        return self._short_address if self._short_address is not None else self.get_short_address()
+        return self.get_short_address()
 
     def get_short_address(self):
         """
@@ -154,7 +153,7 @@ class PublicKey(AbstractKey):
         """
         :rtype: KeyAddress
         """
-        return self._long_address if self._long_address is not None else self.get_long_address()
+        return self.get_long_address()
 
     def get_long_address(self):
         """

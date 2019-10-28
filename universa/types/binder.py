@@ -13,6 +13,8 @@ from .base import Base
 class Binder(Base, MutableMapping):
     JAVA_CLASS = 'net.sergeych.tools.Binder'
 
+    LOCAL_ATTRS = ('id', '__initial')
+
     def __init__(self, *args, **kwargs):
         _id = kwargs.pop('id', None)
         self.__initial = dict(*args, **kwargs)

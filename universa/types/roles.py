@@ -96,7 +96,7 @@ class SimpleRole(Role):
         """
         self.__records = records
         super(SimpleRole, self).__init__(name=name, **kwargs)
-        self.__records = None
+        del self.__records
 
     def _instantiate_data(self):
         if self.__records is not None:

@@ -11,7 +11,7 @@ class HashId(Base):
 
     def __init__(self, packed_data=None, **kwargs):
         # TODO: check this constructor
-        raise NotImplementedError()
+        # raise NotImplementedError()
         self.packed_data = packed_data
         super(HashId, self).__init__(**kwargs)
 

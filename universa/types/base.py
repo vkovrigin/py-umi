@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from universa import logging
+from universa.exceptions import UniversaException
 from universa.transport import transport
 
 
@@ -11,6 +12,8 @@ logger = logging.getLogger()
 class Base(object):
     JAVA_CLASS = ''
     API_TYPE = ''
+
+    LOCAL_ATTRS = ('id',)
 
     __slots__ = ('id', '__weakref__')
 
@@ -33,9 +36,36 @@ class Base(object):
         if self.id and transport:
             transport.drop_objects([self.id])
 
+    def __getattr__(self, item):
+        if item in self.LOCAL_ATTRS:
+            return self.__getattribute__(item)
+
+        if self.id is not None:
+            try:
+                data = self._get_field(self.id, item)
+            except UniversaException:
+                raise AttributeError('{class_name!r} object has no attribute {attr!r}'
+                                         .format(class_name=self.__class__.__name__, attr=item))
+            return data
+
+    # def __setattr__(self, key, value):
+    #     if key in self.LOCAL_ATTRS:
+    #         super(Base, self).__setattr__(key, value)
+    #
+    #     if self.id is not None:
+    #         self._invoke('set', key, value)
+    #     else:
+    #         raise AttributeError
+
+    def __eq__(self, other):
+        return self.equals(other)
+
+    def __ne__(self, other):
+        return not self.equals(other)
+
     @classmethod
     def _set_api_type(cls):
-        cls.API_TYPE = cls.JAVA_CLASS.split('.')[-1].replace('$', '.')
+        cls.API_TYPE = cls.API_TYPE or cls.JAVA_CLASS.split('.')[-1].replace('$', '.')
 
     @staticmethod
     def get_class_by_java(java_class_name):
@@ -70,7 +100,7 @@ class Base(object):
         return umi_dct
 
     def _instantiate(self):
-        args = [self.__class__.__name__]
+        args = [self.__class__.API_TYPE]
         data = self._instantiate_data()
         if data is not None:
             if isinstance(data, tuple):

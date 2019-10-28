@@ -2,7 +2,7 @@
 # Universa
 
 [![Build status](https://travis-ci.org/vkovrigin/universa.svg?master)](https://travis-ci.org/vkovrigin/universa)
-[![PyPI Downloads](https://img.shields.io/pypi/dw/universa.svg)](https://pypi.org/project/universa/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/universa.svg)](https://pypi.org/project/universa/)
 [![Latest PyPI version](https://img.shields.io/pypi/v/universa.svg)](https://pypi.org/project/universa/)
 [![License](https://img.shields.io/pypi/l/universa.svg)](https://pypi.org/project/universa/)
 

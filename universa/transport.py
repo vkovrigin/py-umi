@@ -18,6 +18,7 @@ class Transport(object):
     DEFAULT_CONNECTION_METHOD = 'pipe'
     DEFAULT_BINARY = 'umi'
     DEFAULT_CONNECTION_CONFIG = (DEFAULT_CONNECTION_METHOD, DEFAULT_BINARY)
+    WINDOW = 1024 * 1024 * 5
 
     OBJECTS = {}
 
@@ -83,7 +84,7 @@ class Transport(object):
     @staticmethod
     def __make_pipe_transport(binary_path):
         try:
-            return pexpect.spawn(binary_path, timeout=None)
+            return pexpect.spawn(binary_path, timeout=None, maxread=Transport.WINDOW)
         except pexpect.exceptions.ExceptionPexpect as e:
             if e.value.startswith('The command was not found or was not executable:'):
                 raise ValueError('UMI executable you have chosen is not available at the requested path (or in $PATH).')
@@ -96,7 +97,7 @@ class Transport(object):
             sock = socket.create_connection((host, port))
         except ConnectionRefusedError:
             raise ConnectionRefusedError('UMI refused the connection at tcp://%s:%s.' % (host, port))
-        return streamexpect.wrap(sock, close_stream=False)
+        return streamexpect.wrap(sock, window=Transport.WINDOW, close_stream=False)
 
     @staticmethod
     def __make_unix_transport(socket_path):
@@ -106,7 +107,7 @@ class Transport(object):
             sock.connect(socket_path)
         except ConnectionRefusedError:
             raise ConnectionRefusedError('UMI refused the connection at unix://%s.' % socket_path)
-        return streamexpect.wrap(sock, close_stream=False)
+        return streamexpect.wrap(sock, window=Transport.WINDOW, close_stream=False)
 
     @staticmethod
     def get_instance():

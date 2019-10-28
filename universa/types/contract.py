@@ -2,11 +2,15 @@
 from __future__ import absolute_import, unicode_literals
 
 import warnings
+from base64 import b64encode
 
 from .base import Base
+from .binder import Binder
 from .crypto import KeyAddress, PrivateKey, PublicKey
+from .hash_id import HashId
 from .roles import Role
 from .permissions import Permission
+from .utils import HashSet
 from universa.exceptions import UniversaException
 from universa.utils import ut, dt
 
@@ -39,7 +43,7 @@ class Contract(Base):
         if role_name not in self.ROLES:
             return
 
-        _set = set()
+        __addresses = []
         for address in addresses:
             __addr = None
             if isinstance(address, KeyAddress):
@@ -63,10 +67,10 @@ class Contract(Base):
                             pass
 
             if __addr is not None:
-                _set.add(__addr)
+                __addresses.append(__addr)
 
         cmd = 'set{}Keys'.format(role_name.capitalize())
-        rsp = self._invoke(cmd, *[__addr.remote for __addr in _set])
+        rsp = self._invoke(cmd, *__addresses)
         klass = self.get_class_by_java(rsp['className'])
         return klass.get(rsp['id'])
 
@@ -195,8 +199,25 @@ class Contract(Base):
     def check(self):
         return self._invoke('check')
 
-    def set_state(self):
-        raise NotImplementedError()
+    def get_errors(self):
+        return self._invoke('getErrors')
+
+    def get_packed_transaction(self):
+        return self._invoke('getPackedTransaction')
+
+    def get_origin(self):
+        return HashId(id=self._invoke('getOrigin')['id'])
+
+    def get_id(self):
+        return HashId(id=self._invoke('getId')['id'])
+
+    def get_state_data(self):
+        rsp = self._invoke('getStateData')
+        return Binder.get(rsp['id'])
+
+    def set_state(self, name, value):
+        remote = self._invoke_static_with_type('Binder', 'of', value)
+        self._invoke('set', name,  remote)
 
     def get_processed_cost(self):
         return self._invoke('getProcessedCost')
@@ -204,9 +225,73 @@ class Contract(Base):
     def get_processed_cost_u(self):
         return self._invoke('getProcessedCostU')
 
+    def get_transaction_pack(self):
+        rsp = self._invoke('getTransactionPack')
+        return TransactionPack(id=rsp['id'])
+
+    def get_new_items(self):
+        return HashSet(id=self._invoke('getNewItems')['id'])
+
+    def get_revoking_items(self):
+        return HashSet(id=self._invoke('getRevokingItems')['id'])
+
+    @classmethod
+    def from_sealed_binary(cls, sealed_binary):
+        """
+
+        :type sealed_binary: bytes
+        :rtype: Contract
+        """
+        rsp = cls._invoke_static('fromSealedBinary', {'__type': 'binary', 'base64': b64encode(sealed_binary).decode()})
+        return Contract(id=rsp['id'])
+
+
+class TransactionPack(Base):
+    JAVA_CLASS = 'com.icodici.universa.contract.TransactionPack'
+
+    def _instantiate_data(self):
+        pass
+
+    @classmethod
+    def unpack(cls, pack_or_contract_bytes, allow_non_transactions=None):
+        """
+        :type pack_or_contract_bytes: bytes
+        :type allow_non_transactions: bool | None
+        """
+        rsp = cls._invoke_static('unpack', {'__type': 'binary', 'base64': b64encode(pack_or_contract_bytes).decode()})
+        return TransactionPack(id=rsp['id'])
+
+    def set_contract(self, contract):
+        """
+        :type contract: Contract
+        """
+        self._invoke('setContract', contract)
+
+    def get_contract(self):
+        """
+        :rtype: Contract
+        """
+        return Contract(id=self._invoke('getContract')['id'])
+
 
 class ContractsService(Base):
     JAVA_CLASS = 'com.icodici.universa.contract.ContractsService'
+
+    @classmethod
+    def create_split_join(cls, contracts_to_join, amounts_to_split, addresses_to_split, owner_keys,
+                          field_name='amount'):
+        """
+
+        :type contracts_to_join: list[Contract]
+        :type amounts_to_split: list[str]
+        :type addresses_to_split: list[KeyAddress]
+        :type owner_keys: HashSet[PrivateKey]
+        :type field_name: str
+        :rtype: list[Contract]
+        """
+        return [Contract(id=row['id'])
+                    for row in cls._invoke_static('createSplitJoin', contracts_to_join, amounts_to_split,
+                                                  addresses_to_split, owner_keys, field_name)]
 
 
 class Reference(Base):
@@ -215,6 +300,32 @@ class Reference(Base):
 
 class Parcel(Base):
     JAVA_CLASS = 'com.icodici.universa.contract.Parcel'
+
+    def __init__(self, **kwargs):
+        super(Parcel, self).__init__(**kwargs)
+
+    def _instantiate_data(self):
+        return
+
+    @classmethod
+    def of(cls, payload, u_contract, u_keys):
+        """
+        :type payload: Contract
+        :type u_contract: Contract
+        :type u_keys: list[PrivateKey]
+        :rtype: Parcel
+        """
+        rsp = cls._invoke_static('of', payload, u_contract, u_keys)
+        return Parcel(id=rsp['id'])
+
+    def pack(self):
+        return self._invoke('pack')
+
+    def get_payload(self):
+        return TransactionPack(id=self._invoke('getPayload')['id'])
+
+    def get_payment(self):
+        return TransactionPack(id=self._invoke('getPayment')['id'])
 
 
 class ExtendedSignature(Base):

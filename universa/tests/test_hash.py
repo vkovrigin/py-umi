@@ -13,9 +13,9 @@ class TestHash(unittest.TestCase):
         role = SimpleRole('role', [short_address])
         x = role._invoke('getSimpleKeyAddresses')
 
-        hashset = HashSet.get(x['id'])
+        hashset = HashSet(id=x['id'])
 
-        self.assertTrue(hashset.items[0].equals(short_address))
+        self.assertTrue(hashset[0].equals(short_address))
 
 
 if __name__ == '__main__':
