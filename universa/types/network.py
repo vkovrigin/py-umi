@@ -31,6 +31,23 @@ class Client(Base):
         """
         return self._invoke('getState', hash_id)
 
+    def is_approved_by_network(self, item_id, trust_level, millis_to_wait):
+        """
+        Check if the contract has APPROVED status across the network. The method queries the status
+        from multiple random different nodes until either gets enough replies to consider it approved,
+        or collects a negative consensus sufficient to consider it is not approved (whatever happens earlier).
+        “Enough” factor (for “enough replies”) is specified using the trustLevel parameter
+        (what ratio of the total node count you would consider trusted).
+
+        :param HashId item_id: to get state of
+        :param float trust_level: a value from 0 (exclusive) to 0.9;
+                                  how many nodes (of all ones available in the network) do you need
+        :param int millis_to_wait: maximum time to get the positive or negative result from the network.
+                                   If result is not received within given time ClientError is thrown
+        :rtype: bool
+        """
+        return self._invoke('isApprovedByNetwork', item_id, trust_level, millis_to_wait)
+
     def register_parcel_with_state(self, packed, millis_to_wait):
         """
         Register the contract on the network using parcel (to provide payment)
