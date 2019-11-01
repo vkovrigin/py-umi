@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from .base import Base
+from .crypto import KeyAddress
 
 
 #
@@ -44,6 +45,19 @@ class Role(Base):
         if required_mode in [self.RequiredMode.MODES]:
             return self._invoke('getReferences', required_mode)
         return None
+
+    def get_simple_address(self):
+        """
+        Get an address from the role, if it is just a single one. May be used to display
+        a single bearer of a role in UIs. Returns null if a single address cannot be decided for the role
+        (like, if there is no addresses/keys discoverable or if there is more than 1 address/key).
+        If the role is bound to a public key rather than an address, returns its short address.
+
+        :rtype: KeyAddress | None
+        """
+        key_address = self._invoke('getSimpleAddress')
+        if key_address:
+            return KeyAddress(id=key_address['id'])
 
     def hash_code(self):
         return self._invoke('hashCode')
