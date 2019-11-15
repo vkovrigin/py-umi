@@ -26,11 +26,11 @@ EXTRAS_REQUIRE = {
 
 
 setuptools.setup(
-    name='universa',
-    version='0.2.0',
+    name='py-umi',
+    version='0.2.1',
     author='Vadim Kovrigin',
     author_email='kovrigin.dev@gmail.com',
-    description='Python package to access Universa API from python.',
+    description='Python package to access Universa UMI API from python.',
     include_package_data=True,
     install_requires=[
         'pexpect>=4.7.0',
@@ -39,8 +39,8 @@ setuptools.setup(
     extras_require=EXTRAS_REQUIRE,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    keywords=['Universa'],
-    url='https://github.com/vkovrigin/universa',
+    keywords=['Universa', 'UMI'],
+    url='https://github.com/vkovrigin/py-umi',
     packages=setuptools.find_packages(),
     classifiers=CLASSIFIERS,
 )

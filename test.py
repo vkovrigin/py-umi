@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from universa.transport import transport
-from universa.types import PrivateKey, Contract, RevokePermission
+from umi.transport import transport
+from umi.types import PrivateKey, Contract, RevokePermission
 
 if __name__ == '__main__':
     # The next line is not necessary if umi is reachable via the $PATH

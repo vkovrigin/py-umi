@@ -1,10 +1,10 @@
 
-# Universa
+# py-umi
 
-[![Build status](https://travis-ci.org/vkovrigin/universa.svg?master)](https://travis-ci.org/vkovrigin/universa)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/universa.svg)](https://pypi.org/project/universa/)
-[![Latest PyPI version](https://img.shields.io/pypi/v/universa.svg)](https://pypi.org/project/universa/)
-[![License](https://img.shields.io/pypi/l/universa.svg)](https://pypi.org/project/universa/)
+[![Build status](https://travis-ci.org/vkovrigin/py-umi.svg?master)](https://travis-ci.org/vkovrigin/py-umi)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/py-umi.svg)](https://pypi.org/project/py-umi/)
+[![Latest PyPI version](https://img.shields.io/pypi/v/py-umi.svg)](https://pypi.org/project/py-umi/)
+[![License](https://img.shields.io/pypi/l/py-umi.svg)](https://pypi.org/project/py-umi/)
 
 This is an under-construction official Python package from
 [Universa](https://universablockchain.com)
@@ -15,7 +15,7 @@ to facilitate access to the Java library using Universa's UMI protocol.
 ### Installation
 
 ```bash
-pip install universa
+pip install py-umi
 ```
 
 ## Usage
@@ -32,15 +32,15 @@ UMI can be used in one of three modes:
 * `unix` – connect to an already running UMI instance via Unix socket.
 
  By default it expects an `umi` binary to be installed an reachable via the shell `$PATH`, and will invoke it automatically in `pipe` mode.
- Use `universa.transport.setupUMI` method if you need to switch the connection method to some other.
+ Use `umi.transport.setupUMI` method if you need to switch the connection method to some other.
 
 ### Example
 
 
 ```python
 #!/usr/bin/env python3
-from universa.transport import transport
-from universa.types import PrivateKey, Contract, RevokePermission
+from umi.transport import transport
+from umi.types import PrivateKey, Contract, RevokePermission
 
 if __name__ == '__main__':
     # The next line is not necessary if umi is reachable via the $PATH
