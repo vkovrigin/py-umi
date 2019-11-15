@@ -81,7 +81,6 @@ class Permission(Base):
     # net.sergeych.tools.Binder	serialize(net.sergeych.biserializer.BiSerializer serializer)
 
 
-
 class ChangeNumberPermission(Permission):
     JAVA_CLASS = 'com.icodici.universa.contract.permissions.ChangeNumberPermission'
 
