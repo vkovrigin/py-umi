@@ -8,8 +8,8 @@ import socket
 import streamexpect
 import weakref
 
-from universa import logging
-from universa import exceptions
+from umi import logging
+from umi import exceptions
 
 logger = logging.getLogger()
 
@@ -28,7 +28,7 @@ class Transport(object):
 
     def __init__(self, serial=0):
         if Transport.__instance is not None:
-            raise Exception('Universa Transport is a singleton.')
+            raise Exception('UMI Transport is a singleton.')
 
         Transport.__instance = self
         self.OBJECTS = weakref.WeakValueDictionary()
@@ -148,7 +148,7 @@ class Transport(object):
         logger.debug('   << %s', rsp_text)
         rsp = json.loads(rsp_text)
         if 'error' in rsp:
-            raise exceptions.UniversaException(rsp_text, rsp['error'])
+            raise exceptions.UMIException(rsp_text, rsp['error'])
 
         if not full_response:
             return rsp['result']

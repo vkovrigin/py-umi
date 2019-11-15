@@ -11,8 +11,8 @@ from .hash_id import HashId
 from .roles import Role
 from .permissions import Permission
 from .utils import HashSet
-from universa.exceptions import UniversaException
-from universa.utils import ut, dt
+from umi.exceptions import UMIException
+from umi.utils import ut, dt
 
 
 class Contract(Base):
@@ -59,11 +59,11 @@ class Contract(Base):
             elif isinstance(address, str):
                 try:
                     __addr = KeyAddress(address=address)
-                except UniversaException as e:
+                except UMIException as e:
                     if 'Not a Base58 input' in e.error.get('text', ''):
                         try:
                             __addr = KeyAddress(uaddress=address)
-                        except UniversaException:
+                        except UMIException:
                             pass
 
             if __addr is not None:

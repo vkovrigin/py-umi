@@ -15,8 +15,8 @@ except NameError:
 
 from streamexpect import ExpectTimeout
 
-from universa.transport import transport
-from universa.types import PrivateKey
+from umi.transport import transport
+from umi.types import PrivateKey
 
 
 logger = logging.getLogger()

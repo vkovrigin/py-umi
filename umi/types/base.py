@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-from universa import logging
-from universa.exceptions import UniversaException
-from universa.transport import transport
+from umi import logging
+from umi.exceptions import UMIException
+from umi.transport import transport
 
 
 logger = logging.getLogger()
@@ -43,7 +43,7 @@ class Base(object):
         if self.id is not None:
             try:
                 data = self._get_field(self.id, item)
-            except UniversaException:
+            except UMIException:
                 raise AttributeError('{class_name!r} object has no attribute {attr!r}'
                                          .format(class_name=self.__class__.__name__, attr=item))
             return data

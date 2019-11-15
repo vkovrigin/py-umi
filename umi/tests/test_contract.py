@@ -5,7 +5,7 @@ from datetime import timedelta
 import unittest
 import warnings
 
-from universa.types import PrivateKey, Contract, SimpleRole
+from umi.types import PrivateKey, Contract, SimpleRole
 
 
 class TestContract(unittest.TestCase):

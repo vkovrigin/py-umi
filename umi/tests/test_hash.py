@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 import unittest
 
-from universa.types import PrivateKey, SimpleRole, HashSet
+from umi.types import PrivateKey, SimpleRole, HashSet
 
 
 class TestHash(unittest.TestCase):

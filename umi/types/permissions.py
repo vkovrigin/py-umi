@@ -11,7 +11,7 @@ class Permission(Base):
         """
 
         :type name: str | None
-        :type role: universa.types.roles.Role | None
+        :type role: umi.types.roles.Role | None
         :type params: dict | None
         """
         self._name = name
@@ -57,7 +57,7 @@ class Permission(Base):
 
     def get_role(self):
         """
-        :rtype: universa.types.roles.Role | None
+        :rtype: umi.types.roles.Role | None
         """
         rsp = self._invoke('getRole')
         if rsp is not None:
@@ -68,7 +68,7 @@ class Permission(Base):
 
     def is_allowed_for_keys(self, *keys):
         """
-        :type keys: universa.types.crypto.PublicKey
+        :type keys: umi.types.crypto.PublicKey
         :rtype: bool
         """
         return self._invoke('isAllowedForKeys', *[key.remote for key in keys])
@@ -99,7 +99,7 @@ class RevokePermission(Permission):
 
     def __init__(self, role, **kwargs):
         """
-        :type role: universa.types.roles.Role
+        :type role: umi.types.roles.Role
         """
         super(RevokePermission, self).__init__(role=role, **kwargs)
 

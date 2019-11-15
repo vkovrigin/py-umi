@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 import unittest
 
-from universa.types import PrivateKey, PublicKey, KeyAddress
+from umi.types import PrivateKey, PublicKey, KeyAddress
 
 
 class TestCrypto(unittest.TestCase):

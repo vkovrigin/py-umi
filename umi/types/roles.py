@@ -34,7 +34,7 @@ class Role(Base):
         return self._invoke('getComment')
 
     def get_contract(self):
-        from universa.types.contract import Contract
+        from umi.types.contract import Contract
         rsp = self._invoke('getContract')
         return Contract.get(rsp['id']) if rsp is not None else None
 
@@ -88,7 +88,7 @@ class Role(Base):
 
     def set_contract(self, contract):
         """
-        :type contract: universa.types.contract.Contract
+        :type contract: umi.types.contract.Contract
         :return:
         """
         self._invoke('setContract', contract.remote)
