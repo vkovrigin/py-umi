@@ -1,0 +1,13 @@
+site_name: py-umi
+repo_url: https://github.com/vkovrigin/py-umi/
+docs_dir:
+markdown_extensions:
+    - toc:
+        permalink: "#"
+
+nav:
+    - Index: index.md
+    - Installation: installation.md
+#    - 'Introduction': 'index.md'
+#    - 'User Guide': 'user-guide.md'
+#    - 'About': 'about.md'
