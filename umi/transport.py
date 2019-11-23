@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 import json
 import os
 import pexpect
+import re
 import socket
 import streamexpect
 import weakref
@@ -41,7 +42,7 @@ class Transport(object):
             self.__proc.close()
 
     @classmethod
-    def setupUMI(cls, method, path=None, host=None, port=None, serial=0):
+    def setupUMI(cls, method, path=None, host=None, port=None, serial=0, pipe_log=None):
         """Configure Python to use a specific UMI connection.
 
         :param method: one of `'pipe'`, `'tcp'` or `'unix'`.
@@ -56,7 +57,7 @@ class Transport(object):
         if method == 'pipe':
             if not path:
                 raise ValueError('In "pipe" mode, you should provide non-empty "path" for UMI binary!')
-            builder = lambda: cls.__make_pipe_transport(path)
+            builder = lambda: cls.__make_pipe_transport(path, pipe_log)
         elif method == 'tcp':
             if not host or not port:
                 raise ValueError('In "tcp" mode, you should provide non-empty "host" and "port" for UMI TCP socket!')
@@ -82,9 +83,13 @@ class Transport(object):
         transport.serial = max(serial, 0)
 
     @staticmethod
-    def __make_pipe_transport(binary_path):
+    def __make_pipe_transport(binary_path, log_path=None):
+        args = ['--zero-frame']
+        if log_path:
+            args.extend(['--log', log_path])
+
         try:
-            return pexpect.spawn(binary_path, timeout=None, maxread=Transport.WINDOW)
+            return pexpect.spawn(binary_path, args, maxread=Transport.WINDOW)
         except pexpect.exceptions.ExceptionPexpect as e:
             if e.value.startswith('The command was not found or was not executable:'):
                 raise ValueError('UMI executable you have chosen is not available at the requested path (or in $PATH).')
@@ -129,8 +134,10 @@ class Transport(object):
         cmd = self._format(serial=self.serial, cmd=name, **kwargs)
         logger.debug('   >> %s', cmd.decode())
         if self.method == 'pipe':
-            self.transport.sendline(cmd)
-            self.transport.expect('\r\n.*"ref":%s.*\r\n' % self.serial)
+            for line in re.findall(b'.{1,1000}', cmd):
+                self.transport.sendline(line)
+            self.transport.sendline(b'\x00')
+            self.transport.expect('\r\n.*"ref":%s.*\x00' % self.serial)
             rsp_text = self.transport.after
         else:
             self.transport.sendall(cmd + b'\r\n')
@@ -142,7 +149,7 @@ class Transport(object):
         except Exception:
             pass
         finally:
-            rsp_text = rsp_text.strip()
+            rsp_text = rsp_text.strip().strip('\x00')
 
         self.serial += 1
         logger.debug('   << %s', rsp_text)
