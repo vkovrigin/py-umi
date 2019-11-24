@@ -8,16 +8,14 @@ import subprocess
 import time
 import unittest
 
-try:
-    _FileNotFoundError = FileNotFoundError
-except NameError:
-    _FileNotFoundError = OSError
-
 from streamexpect import ExpectTimeout
 
-from umi.transport import transport
+from umi.transport import PY3, transport
 from umi.types import PrivateKey
 
+if not PY3:
+    class FileNotFoundError(OSError):
+        pass
 
 logger = logging.getLogger()
 
@@ -49,7 +47,7 @@ class TestTransport(unittest.TestCase):
                 proc.terminate()
 
     def test_setupUMI(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(FileNotFoundError):
             transport.setupUMI('pipe', 'veryrandombinaryname4242')
         transport.setupUMI('pipe', transport.DEFAULT_BINARY)
 
