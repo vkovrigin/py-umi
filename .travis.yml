@@ -4,10 +4,11 @@ python:
   - '3.5'
   - '3.6'
   - '3.7'
-  - '3.8-dev'
+  - '3.8'
+  - 'nightly'
 matrix:
   allow_failures:
-  - python: '3.8-dev'
+  - python: 'nightly'
 
 before_install:
   - sudo apt-get install -y unzip openjdk-8-jdk

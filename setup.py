@@ -27,7 +27,7 @@ EXTRAS_REQUIRE = {
 
 setuptools.setup(
     name='py-umi',
-    version='0.2.3',
+    version='0.2.4',
     author='Vadim Kovrigin',
     author_email='kovrigin.dev@gmail.com',
     description='Python package to access Universa UMI API from python.',
