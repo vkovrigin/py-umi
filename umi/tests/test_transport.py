@@ -10,12 +10,14 @@ import unittest
 
 from streamexpect import ExpectTimeout
 
-from umi.transport import PY3, transport
+from umi.transport import transport
 from umi.types import PrivateKey
 
-if not PY3:
-    class FileNotFoundError(OSError):
-        pass
+try:
+    _FileNotFoundError = FileNotFoundError
+except NameError:
+    _FileNotFoundError = OSError
+
 
 logger = logging.getLogger()
 
@@ -32,7 +34,7 @@ class TestTransport(unittest.TestCase):
     def setUpClass(cls):
         try:
             os.remove(cls.UNIX_SOCKET_PATH)
-        except FileNotFoundError:
+        except _FileNotFoundError:
             pass
 
         cls.umi_tcp_server = subprocess.Popen(['umi', '--noexit', '--listen', 'tcp://{}:{}'.format(cls.TCP_SOCKET_HOST, cls.TCP_SOCKET_PORT)])
@@ -47,7 +49,7 @@ class TestTransport(unittest.TestCase):
                 proc.terminate()
 
     def test_setupUMI(self):
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(_FileNotFoundError):
             transport.setupUMI('pipe', 'veryrandombinaryname4242')
         transport.setupUMI('pipe', transport.DEFAULT_BINARY)
 
