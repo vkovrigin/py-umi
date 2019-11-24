@@ -32,7 +32,7 @@ class TestTransport(unittest.TestCase):
     def setUpClass(cls):
         try:
             os.remove(cls.UNIX_SOCKET_PATH)
-        except _FileNotFoundError:
+        except FileNotFoundError:
             pass
 
         cls.umi_tcp_server = subprocess.Popen(['umi', '--noexit', '--listen', 'tcp://{}:{}'.format(cls.TCP_SOCKET_HOST, cls.TCP_SOCKET_PORT)])
